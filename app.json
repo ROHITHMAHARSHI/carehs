@@ -1,0 +1,7 @@
+{
+  "name": "Hospital Finder",
+  "description": "A barebones Node.js app using Express 4, that does hospital search based on database values",
+  "repository": "https://github.com/rgoli/care",
+  "keywords": ["node", "express", "heroku", "hospital", "google maps", "whispir", "postgres"],
+  "image": "heroku/nodejs"
+}

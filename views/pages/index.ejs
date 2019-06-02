@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include ../partials/header.ejs %>
+  <script>
+    
+    var mapCoords = {};
+    function searchForSpeciality(){
+      var searchfor = document.getElementById('searchfor').value;
+      var jqxhr = $.ajax({ url: "/search?speciality=" + searchfor, context: document.body})
+            .done(function(data) {
+              data = data.results;
+
+              let template = document.getElementById('hiddenDiv').innerHTML;
+              document.getElementById('results').innerHTML = '<h2> We have found ' + data.length + ' result(s).';
+              mapCoords = {}; //reset 
+
+
+              for (var i = data.length - 1; i >= 0; i--) {
+                let _template = template;
+                _template = replaceAll(_template, '@@id@@' , data[i]['id']);
+                _template = replaceAll(_template, '@@hospital@@' , data[i]['hospital']);
+                _template = replaceAll(_template, '@@speciality@@' , data[i]['speciality']);
+                _template = replaceAll(_template, '@@address@@' , data[i]['address']);
+                _template = replaceAll(_template, '@@doctor@@' , data[i]['doctor']);
+                _template = replaceAll(_template, '@@phone@@' , data[i]['phone']);
+                _template = replaceAll(_template, '@@latlong@@' , data[i]['latlong']);
+                $( "#results" ).append( _template );
+                mapCoords['map' + data[i]['id']] = data[i]['latlong'];
+              }
+              initMap();
+              //google.maps.event.addDomListener(window, 'load', initMap);
+            })
+            .fail(function() {
+              alert( "error" );
+            });
+    }
+    function replaceAll(str, find, replace) {
+      return str.replace(new RegExp(find, 'g'), replace);
+    }
+
+    function initMap() {
+
+        for (var key in mapCoords) {
+            if (mapCoords.hasOwnProperty(key)) {
+                
+                var coords = mapCoords[key].split(",");
+
+                var location = new google.maps.LatLng(coords[0].trim(), coords[1].trim());
+
+                var mapCanvas = document.getElementById(key);
+                var mapOptions = {
+                    center: location,
+                    zoom: 16,
+                    panControl: false,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                }
+                var map = new google.maps.Map(mapCanvas, mapOptions);
+
+                var markerImage = 'marker.png';
+
+                var marker = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    icon: markerImage
+                });
+            }
+        }
+    }
+  </script>
+</head>
+
+<body>
+
+  <% include ../partials/nav.ejs %>
+
+<div class="jumbotron text-center">
+  <div class="container">
+    <h1>Care</h1>
+    <h3>Easy Hospital Finder &amp; Appointment Booking</h3>
+    <p style="font-size: 12px;">Get list of available hospitals nearby you</p>
+  </div>
+  <hr/>
+  <div class="container">
+    <form>
+      <div class="form-group">
+        <label for="searchfor">Search for a Speciality</label>
+        <input type="text" class="form-control" name="searchfor" id="searchfor" aria-describedby="searchHelp" placeholder="Cardiology...">
+      </div>
+       <a type="button" class="btn btn-lg btn-default" href="#" onclick="searchForSpeciality()"><span class="glyphicon glyphicon-search"></span> Search</a>
+    </form>
+  </div>
+</div>
+<div class="container" id="results">
+   <!--div class="row">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Card title</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+        <p class="card-text">Quick sample text to create the card title and make up the body of the card's content.</p>
+        <a href="#" class="card-link">Card link</a>
+        <a href="#" class="card-link">Another link</a>
+      </div>
+    </div>
+  </div-->
+</div>
+<div id="hiddenDiv" style="display: none;">
+  <div class="card">
+    <div id="map@@id@@" style="height: 300px; width: auto;"></div>
+    <div class="card-body">
+      <h3 class="card-title">@@hospital@@</h3>
+      <h5 class="card-subtitle mb-2 text-muted">@@speciality@@</h5>
+      <p class="card-text">@@address@@</p>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">@@doctor@@</li>
+        <li class="list-group-item"><a href="tel:+61@@phone@@">+61@@phone@@</a></li>
+     </ul>
+      <a href="https://www.google.com/maps/search/?api=1&query=@@latlong@@" class="btn btn-primary"><span class="glyphicon glyphicon-map-marker"></span> Directions</a>
+      <a href="/appointment?hospital=@@id@@" class="btn btn-success"><span class="glyphicon glyphicon-calendar"></span> Book Appointment</a>
+    </div>
+  </div>
+</div>
+</body>
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= mapsKey %>"></script>
+</html>

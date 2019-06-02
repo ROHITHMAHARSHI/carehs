@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include ../partials/header.ejs %>
+
+</head>
+
+<body>
+
+  <% include ../partials/nav.ejs %>
+
+<div class="jumbotron text-center">
+  <div class="container-fluid">
+    <h2>Appointment Booking for <%= hospitalName %></h2>
+    <p style="font-size: 12px;">Book an appointment at the selected Hospital.</p>
+  </div>
+  <hr/>
+  <div class="container">
+    <form method="POST" action="/fixappointment?hospital=<%= hospitalid %>" name="appointmentForm" id="appointmentForm">
+      <div class="form-group row">
+        <label for="firstname" class="col-sm-2 col-form-label">First Name</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" placeholder="" name="firstname" id="firstname">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="lastname" class="col-sm-2 col-form-label">Last Name</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" placeholder="" name="lastname" id="lastname">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="email" class="col-sm-2 col-form-label">Email</label>
+        <div class="col-sm-10">
+          <input type="email" class="form-control" placeholder="" name="email" id="email">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="phone" class="col-sm-2 col-form-label">Phone Number</label>
+        <div class="col-sm-10">
+          <input type="mumber" class="form-control" placeholder="" name="phone" id="phone">
+        </div>
+      </div>
+      <div class="form-group row">
+          <label for="app_date" class="col-sm-2 col-form-label">Appointment Date</label>
+          <div class="col-sm-10">
+            <select class="form-control" id="app_date" name="app_date" onchange="updateSlots(this.value)">
+              <option value="0">Please pick one</option>
+              <option value="<%= datetomorrow %>">Tomorrow</option>
+              <option value="<%= datedayafter %>">Day After</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <label for="app_slot" class="col-sm-2 col-form-label">Appointment Time</label>
+          <div class="col-sm-10">
+            <select class="form-control" id="app_slot" name="app_slot">
+              <option value="">Please pick one</option>
+              <option value="8AM-9AM">8AM-9AM</option>
+              <option value="9AM-10AM">9AM-10AM</option>
+              <option value="10AM-11AM">10AM-11AM</option>
+              <option value="11AM-12AM">11AM-12AM</option>
+              <option value="2PM-3PM">2PM-3PM</option>
+              <option value="3PM-4PM">3PM-4PM</option>
+              <option value="4PM-5PM">4PM-5PM</option>
+              <option value="5PM-6PM">5PM-6PM</option>
+              <option value="6PM-7PM">6PM-7PM</option>
+              <option value="7PM-8PM">7PM-8PM</option>
+            </select>
+          </div>
+        </div>
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <button type="button" class="btn btn-primary" onclick="validate()">Book</button>
+        </div>
+      </div>
+      <input type="hidden" name="hospitalid" value="<%= hospitalid %>"/>
+    </form>
+  </div>
+</div>
+<script type="text/javascript">
+  var slots = <%- JSON.stringify(appointments) %>;
+  function updateSlots(currentDate){
+
+    if(currentDate == "") return;
+    
+    var slotsCount = slots.length;
+
+    var timeslotsUsed = [];
+
+    while(--slotsCount >=0 ){
+      if(slots[slotsCount]['app_date'] == currentDate){
+        timeslotsUsed.push(slots[slotsCount]['app_slot']);
+      }
+    }
+
+    var timeslots = document.getElementById("app_slot").getElementsByTagName("option");
+    for (var i = 0; i < timeslots.length; i++) {
+      if (timeslotsUsed.contains(timeslots[i].value)) {
+        timeslots[i].disabled = true;
+      }
+    }
+
+  }
+
+  Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+        if (this[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+  }
+
+  function validate(){
+    var flag = true;
+
+    var firstname = document.getElementById('firstname');
+    var lastname = document.getElementById('lastname');
+    var email = document.getElementById('email');
+    var phone = document.getElementById('phone');
+    var app_date = document.getElementById('app_date');
+    var app_slot = document.getElementById('app_slot');
+
+    if(firstname.value.trim() == "" || lastname.value.trim() == "" || email.value.trim() == "" || phone.value.trim() == "" || app_date.value.trim() == "" || app_slot.value.trim() == ""){
+      flag = false;
+    }
+
+    if(flag){
+      document.getElementById('appointmentForm').submit();
+    }
+  }
+
+</script>
+</body>
+</html>
